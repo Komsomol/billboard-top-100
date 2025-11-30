@@ -55,6 +55,34 @@ export const useChart = () => {
     error.value = null;
   };
 
+  // Current year for navigation
+  const currentYear = ref(new Date().getFullYear());
+
+  /**
+   * Navigate to previous year's chart
+   */
+  const goToPreviousYear = async () => {
+    currentYear.value -= 1;
+    selectedDate.value = `${currentYear.value}-06-15`;
+    await loadChart();
+  };
+
+  /**
+   * Navigate to next year's chart
+   */
+  const goToNextYear = async () => {
+    const thisYear = new Date().getFullYear();
+    if (currentYear.value >= thisYear) return;
+    currentYear.value += 1;
+    // If current year, don't set a date (get latest)
+    if (currentYear.value === thisYear) {
+      selectedDate.value = '';
+    } else {
+      selectedDate.value = `${currentYear.value}-06-15`;
+    }
+    await loadChart();
+  };
+
   /**
    * Gets video for a song by index
    * @param {number} index - Song index
@@ -73,6 +101,7 @@ export const useChart = () => {
     chartsList,
     selectedChart,
     selectedDate,
+    currentYear,
     loading,
     error,
 
@@ -80,6 +109,8 @@ export const useChart = () => {
     loadChart,
     loadChartsList,
     clearChart,
-    getVideoForSong
+    getVideoForSong,
+    goToPreviousYear,
+    goToNextYear
   };
 };

@@ -64,8 +64,12 @@ export const buildSearchQuery = (title, artist) => {
 
 /**
  * Searches YouTube for a single music video (with caching)
+ * @param {string} title - Song title
+ * @param {string} artist - Artist name
+ * @param {string} apiKey - YouTube API key
+ * @returns {Promise<Object|null>} Video data or null
  */
-const searchVideo = async (title, artist, apiKey) => {
+export const searchVideo = async (title, artist, apiKey) => {
   const cacheKey = createCacheKey(title, artist);
 
   // Check cache first

@@ -13,17 +13,14 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['play-video']);
-
-const formattedWeek = computed(() => {
+const formattedDate = computed(() => {
   if (!props.chartWeek) return '';
   try {
     const date = new Date(props.chartWeek);
     return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      year: 'numeric'
     });
   } catch {
     return props.chartWeek;
@@ -32,61 +29,28 @@ const formattedWeek = computed(() => {
 </script>
 
 <template>
-  <div class="song-list">
-    <div v-if="chartWeek" class="chart-header">
-      <h2>Chart Week: {{ formattedWeek }}</h2>
-      <p class="song-count">{{ songs.length }} songs</p>
+  <div class="w-full">
+    <!-- Week Label -->
+    <div v-if="chartWeek" class="text-center mb-4 sm:mb-6 md:mb-8">
+      <span class="text-xs sm:text-sm text-gray-500">
+        Week of {{ formattedDate }}
+      </span>
     </div>
 
-    <div class="songs-grid">
+    <!-- Songs Grid - Single column on mobile, 2 columns on large desktop -->
+    <div class="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-5
+                xl:grid xl:grid-cols-2 xl:gap-6">
       <SongCard
         v-for="song in songs"
         :key="`${song.rank}-${song.title}`"
         :song="song"
         :video="song.video"
-        @play-video="emit('play-video', $event)"
       />
     </div>
 
-    <div v-if="songs.length === 0" class="empty-state">
-      <p>No songs to display</p>
+    <!-- Empty State -->
+    <div v-if="songs.length === 0" class="text-center py-12 sm:py-16 text-gray-500">
+      No songs to display
     </div>
   </div>
 </template>
-
-<style scoped>
-.song-list {
-  width: 100%;
-}
-
-.chart-header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #333;
-}
-
-.chart-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #fff;
-  margin: 0 0 0.5rem;
-}
-
-.song-count {
-  font-size: 0.875rem;
-  color: #666;
-  margin: 0;
-}
-
-.songs-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #666;
-}
-</style>

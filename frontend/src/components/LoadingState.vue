@@ -8,49 +8,21 @@ defineProps({
 </script>
 
 <template>
-  <div class="loading-state">
-    <div class="loader">
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
+  <div class="flex flex-col items-center justify-center py-16 sm:py-20 md:py-24 gap-6">
+    <!-- Music Bars Animation -->
+    <div class="flex gap-1 items-end h-10 sm:h-12">
+      <div class="w-2 sm:w-2.5 h-5 bg-gradient-to-t from-indigo-500 to-purple-500 rounded animate-pulse-bar delay-0"></div>
+      <div class="w-2 sm:w-2.5 h-7 bg-gradient-to-t from-indigo-500 to-purple-500 rounded animate-pulse-bar delay-100"></div>
+      <div class="w-2 sm:w-2.5 h-10 bg-gradient-to-t from-indigo-500 to-purple-500 rounded animate-pulse-bar delay-200"></div>
+      <div class="w-2 sm:w-2.5 h-7 bg-gradient-to-t from-indigo-500 to-purple-500 rounded animate-pulse-bar delay-300"></div>
+      <div class="w-2 sm:w-2.5 h-5 bg-gradient-to-t from-indigo-500 to-purple-500 rounded animate-pulse-bar delay-400"></div>
     </div>
-    <p>{{ message }}</p>
+    <p class="text-gray-400 text-sm sm:text-base">{{ message }}</p>
   </div>
 </template>
 
 <style scoped>
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  gap: 1.5rem;
-}
-
-.loader {
-  display: flex;
-  gap: 4px;
-  align-items: flex-end;
-  height: 40px;
-}
-
-.bar {
-  width: 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-radius: 4px;
-  animation: pulse 1s ease-in-out infinite;
-}
-
-.bar:nth-child(1) { height: 20px; animation-delay: 0s; }
-.bar:nth-child(2) { height: 30px; animation-delay: 0.1s; }
-.bar:nth-child(3) { height: 40px; animation-delay: 0.2s; }
-.bar:nth-child(4) { height: 30px; animation-delay: 0.3s; }
-.bar:nth-child(5) { height: 20px; animation-delay: 0.4s; }
-
-@keyframes pulse {
+@keyframes pulse-bar {
   0%, 100% {
     transform: scaleY(0.5);
     opacity: 0.5;
@@ -61,9 +33,13 @@ defineProps({
   }
 }
 
-p {
-  color: #a0a0a0;
-  font-size: 1rem;
-  margin: 0;
+.animate-pulse-bar {
+  animation: pulse-bar 1s ease-in-out infinite;
 }
+
+.delay-0 { animation-delay: 0s; }
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
 </style>

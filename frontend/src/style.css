@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/* Custom theme colors */
+@theme {
+  --color-billboard-dark: #0a0a0f;
+  --color-billboard-darker: #1a1a2e;
+  --color-billboard-accent: #ff6b6b;
+  --color-billboard-accent-dark: #ee5a24;
+}
+
+/* Base styles */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--color-billboard-dark) 0%, var(--color-billboard-darker) 100%);
+    background-attachment: fixed;
+    color: white;
+    min-height: 100vh;
+  }
+}
+
+/* Custom component classes */
+@layer components {
+  .container-app {
+    width: 100%;
+    max-width: 24rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-app {
+      max-width: 32rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container-app {
+      max-width: 48rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-app {
+      max-width: 64rem;
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container-app {
+      max-width: 80rem;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .container-app {
+      max-width: 96rem;
+    }
+  }
+}

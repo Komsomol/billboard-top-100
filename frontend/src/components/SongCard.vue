@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
   song: {
@@ -12,348 +12,98 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['play-video']);
-
-const showVideo = ref(false);
-
 const rankClass = computed(() => {
-  if (props.song.rank === 1) return 'rank-gold';
-  if (props.song.rank === 2) return 'rank-silver';
-  if (props.song.rank === 3) return 'rank-bronze';
-  return '';
+  if (props.song.rank === 1) return 'text-yellow-400';
+  if (props.song.rank === 2) return 'text-gray-300';
+  if (props.song.rank === 3) return 'text-amber-600';
+  return 'text-gray-500';
 });
 
 const positionChange = computed(() => {
   const lastWeek = props.song.position?.positionLastWeek;
-  if (!lastWeek) return { type: 'new', label: 'NEW' };
-
+  if (!lastWeek) return { type: 'new', label: 'NEW', color: 'text-purple-400 bg-purple-400/10' };
   const change = lastWeek - props.song.rank;
-  if (change > 0) return { type: 'up', label: `+${change}` };
-  if (change < 0) return { type: 'down', label: `${change}` };
-  return { type: 'same', label: '=' };
+  if (change > 0) return { type: 'up', label: `+${change}`, color: 'text-green-400 bg-green-400/10' };
+  if (change < 0) return { type: 'down', label: `${change}`, color: 'text-red-400 bg-red-400/10' };
+  return { type: 'same', label: '-', color: 'text-gray-500 bg-gray-500/10' };
 });
-
-const handlePlayClick = () => {
-  if (props.video) {
-    showVideo.value = true;
-    emit('play-video', props.video);
-  }
-};
-
-const closeVideo = () => {
-  showVideo.value = false;
-};
 </script>
 
 <template>
-  <div class="song-card" :class="{ 'has-video': video }">
-    <div class="rank" :class="rankClass">
+  <div class="flex items-center gap-2 sm:gap-3 md:gap-4
+              p-2.5 sm:p-3 md:p-4
+              bg-white/[0.04] hover:bg-white/[0.08]
+              rounded-xl sm:rounded-2xl
+              transition-colors duration-150">
+    <!-- Rank -->
+    <div class="w-6 sm:w-7 md:w-8 text-center font-bold text-sm sm:text-base md:text-lg flex-shrink-0"
+         :class="rankClass">
       {{ song.rank }}
     </div>
 
-    <div class="cover-container">
-      <img
-        v-if="song.cover"
-        :src="song.cover"
-        :alt="song.title"
-        class="cover"
-        loading="lazy"
-      />
-      <div v-else class="cover-placeholder">
-        <span>{{ song.title.charAt(0) }}</span>
-      </div>
-
-      <button
-        v-if="video"
-        class="play-overlay"
-        @click="handlePlayClick"
-        aria-label="Play music video"
-      >
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-      </button>
+    <!-- Cover Image -->
+    <img
+      v-if="song.cover"
+      :src="song.cover"
+      :alt="song.title"
+      class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16
+             rounded-lg sm:rounded-xl object-cover flex-shrink-0"
+      loading="lazy"
+    />
+    <div v-else
+         class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16
+                rounded-lg sm:rounded-xl flex-shrink-0
+                bg-gradient-to-br from-gray-700 to-gray-800
+                flex items-center justify-center
+                font-semibold text-base sm:text-lg text-gray-500">
+      {{ song.title.charAt(0) }}
     </div>
 
-    <div class="info">
-      <h3 class="title">{{ song.title }}</h3>
-      <p class="artist">{{ song.artist }}</p>
-
-      <div class="stats">
-        <span class="stat" :class="positionChange.type">
-          {{ positionChange.label }}
-        </span>
-        <span v-if="song.position?.peakPosition" class="stat peak">
-          Peak: #{{ song.position.peakPosition }}
-        </span>
-        <span v-if="song.position?.weeksOnChart" class="stat weeks">
-          {{ song.position.weeksOnChart }} weeks
-        </span>
+    <!-- Song Info -->
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-sm sm:text-base md:text-lg
+                  truncate leading-tight">
+        {{ song.title }}
+      </div>
+      <div class="text-xs sm:text-sm md:text-base text-gray-400
+                  truncate leading-tight mt-0.5">
+        {{ song.artist }}
       </div>
     </div>
 
+    <!-- Position Change Badge -->
+    <div class="text-[10px] sm:text-xs font-semibold
+                px-1.5 sm:px-2 py-0.5 sm:py-1
+                rounded flex-shrink-0"
+         :class="positionChange.color">
+      {{ positionChange.label }}
+    </div>
+
+    <!-- Play Button -->
     <a
       v-if="video"
       :href="video.watchUrl"
       target="_blank"
       rel="noopener"
-      class="youtube-link"
-      title="Watch on YouTube"
+      class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11
+             flex items-center justify-center
+             bg-red-600 hover:bg-red-500 hover:scale-110
+             rounded-full flex-shrink-0
+             transition-all duration-150"
+      title="Play on YouTube"
     >
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+      <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z"/>
       </svg>
     </a>
-
-    <!-- Video Modal -->
-    <Teleport to="body">
-      <div v-if="showVideo && video" class="video-modal" @click.self="closeVideo">
-        <div class="video-container">
-          <button class="close-btn" @click="closeVideo">&times;</button>
-          <iframe
-            :src="`${video.embedUrl}?autoplay=1`"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
-    </Teleport>
+    <div v-else
+         class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11
+                flex items-center justify-center
+                bg-white/10 rounded-full flex-shrink-0
+                text-gray-600">
+      <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.song-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: #1a1a2e;
-  border-radius: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.song-card:hover {
-  transform: translateX(4px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.song-card.has-video {
-  cursor: pointer;
-}
-
-.rank {
-  font-size: 1.5rem;
-  font-weight: 700;
-  min-width: 48px;
-  text-align: center;
-  color: #666;
-}
-
-.rank-gold {
-  color: #ffd700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.rank-silver {
-  color: #c0c0c0;
-  text-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
-}
-
-.rank-bronze {
-  color: #cd7f32;
-  text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
-}
-
-.cover-container {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
-}
-
-.cover {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.cover-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.play-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.song-card:hover .play-overlay {
-  opacity: 1;
-}
-
-.play-overlay svg {
-  width: 32px;
-  height: 32px;
-  color: #fff;
-}
-
-.info {
-  flex: 1;
-  min-width: 0;
-}
-
-.title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  margin: 0 0 0.25rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.artist {
-  font-size: 0.875rem;
-  color: #a0a0a0;
-  margin: 0 0 0.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.stats {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.stat {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  background: #0f0f1a;
-}
-
-.stat.up {
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
-}
-
-.stat.down {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.stat.new {
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.1);
-}
-
-.stat.same {
-  color: #a0a0a0;
-}
-
-.stat.peak {
-  color: #fbbf24;
-}
-
-.stat.weeks {
-  color: #06b6d4;
-}
-
-.youtube-link {
-  padding: 0.5rem;
-  color: #666;
-  transition: color 0.2s;
-}
-
-.youtube-link:hover {
-  color: #ff0000;
-}
-
-.youtube-link svg {
-  width: 24px;
-  height: 24px;
-}
-
-/* Video Modal */
-.video-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.video-container {
-  position: relative;
-  width: 100%;
-  max-width: 900px;
-  aspect-ratio: 16 / 9;
-}
-
-.video-container iframe {
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-}
-
-.close-btn {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 2rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  line-height: 1;
-}
-
-.close-btn:hover {
-  color: #ef4444;
-}
-
-@media (max-width: 640px) {
-  .song-card {
-    padding: 0.75rem;
-  }
-
-  .rank {
-    font-size: 1.25rem;
-    min-width: 36px;
-  }
-
-  .cover-container {
-    width: 48px;
-    height: 48px;
-  }
-
-  .stats {
-    display: none;
-  }
-}
-</style>

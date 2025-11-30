@@ -43,6 +43,27 @@ export const fetchChart = async (chartName = 'hot-100', date = '') => {
 };
 
 /**
+ * Fetches YouTube video data for a single song (for lazy loading)
+ * @param {string} title - Song title
+ * @param {string} artist - Artist name
+ * @returns {Promise<Object|null>} Video data or null
+ */
+export const fetchVideo = async (title, artist) => {
+  try {
+    const response = await axios.get(`${API_BASE}/video`, {
+      params: { title, artist }
+    });
+    if (!response.data.success) {
+      throw new Error(response.data.error);
+    }
+    return response.data.data;
+  } catch (error) {
+    console.error('Failed to fetch video:', error.message);
+    return null;
+  }
+};
+
+/**
  * Popular chart options for the dropdown
  */
 export const POPULAR_CHARTS = [
