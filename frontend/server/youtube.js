@@ -4,13 +4,14 @@ const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
 /**
  * Builds search query for finding official music videos
+ * @param {string} title - Song title
+ * @param {string} artist - Artist name
+ * @returns {string} Search query optimized for music videos
  */
-const buildSearchQuery = (title, artist) => {
+export const buildSearchQuery = (title, artist) => {
   const cleanTitle = title.replace(/\(.*?\)/g, '').trim();
   const cleanArtist = artist
-    .replace(/Featuring/gi, '')
-    .replace(/&/g, '')
-    .split(',')[0]
+    .split(/,|Featuring|&/i)[0]
     .trim();
 
   return `${cleanArtist} ${cleanTitle} official music video`;
