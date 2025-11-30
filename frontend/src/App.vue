@@ -12,8 +12,6 @@ const {
   selectedDate,
   loading,
   error,
-  videos,
-  loadingVideos,
   loadChart
 } = useChart();
 
@@ -73,8 +71,6 @@ const handleRetry = () => {
         <SongList
           v-else-if="chart"
           :songs="chart.songs"
-          :videos="videos"
-          :loading-videos="loadingVideos"
           :chart-week="chart.week"
         />
 

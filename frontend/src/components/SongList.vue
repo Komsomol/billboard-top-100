@@ -7,14 +7,6 @@ const props = defineProps({
     type: Array,
     required: true
   },
-  videos: {
-    type: Map,
-    default: () => new Map()
-  },
-  loadingVideos: {
-    type: Set,
-    default: () => new Set()
-  },
   chartWeek: {
     type: String,
     default: ''
@@ -37,14 +29,6 @@ const formattedWeek = computed(() => {
     return props.chartWeek;
   }
 });
-
-const getVideo = (index) => {
-  return props.videos.get(index) || null;
-};
-
-const isLoadingVideo = (index) => {
-  return props.loadingVideos.has(index);
-};
 </script>
 
 <template>
@@ -56,11 +40,10 @@ const isLoadingVideo = (index) => {
 
     <div class="songs-grid">
       <SongCard
-        v-for="(song, index) in songs"
+        v-for="song in songs"
         :key="`${song.rank}-${song.title}`"
         :song="song"
-        :video="getVideo(index)"
-        :loading-video="isLoadingVideo(index)"
+        :video="song.video"
         @play-video="emit('play-video', $event)"
       />
     </div>

@@ -9,10 +9,6 @@ const props = defineProps({
   video: {
     type: Object,
     default: null
-  },
-  loadingVideo: {
-    type: Boolean,
-    default: false
   }
 });
 
@@ -77,10 +73,6 @@ const closeVideo = () => {
           <path d="M8 5v14l11-7z"/>
         </svg>
       </button>
-
-      <div v-if="loadingVideo" class="loading-overlay">
-        <span class="spinner"></span>
-      </div>
     </div>
 
     <div class="info">
@@ -222,31 +214,6 @@ const closeVideo = () => {
   width: 32px;
   height: 32px;
   color: #fff;
-}
-
-.loading-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .info {

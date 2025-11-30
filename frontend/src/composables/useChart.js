@@ -1,9 +1,9 @@
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import { fetchChart, fetchChartsList } from '../services/billboard.js';
-import { searchMusicVideo } from '../services/youtube.js';
 
 /**
- * Composable for managing Billboard chart data and YouTube videos
+ * Composable for managing Billboard chart data
+ * Video data is now included in the API response (server-side enrichment)
  */
 export const useChart = () => {
   // State
@@ -14,25 +14,16 @@ export const useChart = () => {
   const loading = ref(false);
   const error = ref(null);
 
-  // Video state - using reactive for Maps/Sets
-  const videos = reactive(new Map());
-  const loadingVideos = reactive(new Set());
-
   /**
-   * Fetches chart data and triggers video search
+   * Fetches chart data (videos included from server)
    */
   const loadChart = async () => {
     loading.value = true;
     error.value = null;
-    videos.clear();
-    loadingVideos.clear();
 
     try {
       const data = await fetchChart(selectedChart.value, selectedDate.value);
       chart.value = data;
-
-      // Start loading videos for top songs
-      loadVideosForSongs(data.songs, 20);
     } catch (err) {
       error.value = {
         message: 'Failed to load chart',
@@ -41,73 +32,6 @@ export const useChart = () => {
       chart.value = null;
     } finally {
       loading.value = false;
-    }
-  };
-
-  /**
-   * Loads YouTube videos for songs
-   * @param {Array} songs - Songs array
-   * @param {number} limit - Max songs to search
-   */
-  const loadVideosForSongs = async (songs, limit = 10) => {
-    const songsToLoad = songs.slice(0, limit);
-
-    // Load videos in parallel with rate limiting
-    const batchSize = 5;
-    for (let i = 0; i < songsToLoad.length; i += batchSize) {
-      const batch = songsToLoad.slice(i, i + batchSize);
-      const batchIndices = batch.map((_, idx) => i + idx);
-
-      // Mark as loading
-      batchIndices.forEach((idx) => loadingVideos.add(idx));
-
-      // Fetch in parallel
-      const promises = batch.map(async (song, batchIdx) => {
-        const index = i + batchIdx;
-        try {
-          const video = await searchMusicVideo(song.title, song.artist);
-          if (video) {
-            videos.set(index, video);
-          }
-        } catch (err) {
-          console.error(`Failed to load video for ${song.title}:`, err.message);
-        } finally {
-          loadingVideos.delete(index);
-        }
-      });
-
-      await Promise.all(promises);
-
-      // Small delay between batches to avoid rate limiting
-      if (i + batchSize < songsToLoad.length) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-    }
-  };
-
-  /**
-   * Loads a video for a specific song
-   * @param {number} index - Song index
-   */
-  const loadVideoForSong = async (index) => {
-    if (!chart.value || videos.has(index) || loadingVideos.has(index)) {
-      return;
-    }
-
-    const song = chart.value.songs[index];
-    if (!song) return;
-
-    loadingVideos.add(index);
-
-    try {
-      const video = await searchMusicVideo(song.title, song.artist);
-      if (video) {
-        videos.set(index, video);
-      }
-    } catch (err) {
-      console.error(`Failed to load video for ${song.title}:`, err.message);
-    } finally {
-      loadingVideos.delete(index);
     }
   };
 
@@ -128,9 +52,19 @@ export const useChart = () => {
    */
   const clearChart = () => {
     chart.value = null;
-    videos.clear();
-    loadingVideos.clear();
     error.value = null;
+  };
+
+  /**
+   * Gets video for a song by index
+   * @param {number} index - Song index
+   * @returns {Object|null} Video data or null
+   */
+  const getVideoForSong = (index) => {
+    if (!chart.value || !chart.value.songs[index]) {
+      return null;
+    }
+    return chart.value.songs[index].video || null;
   };
 
   return {
@@ -141,13 +75,11 @@ export const useChart = () => {
     selectedDate,
     loading,
     error,
-    videos,
-    loadingVideos,
 
     // Actions
     loadChart,
     loadChartsList,
-    loadVideoForSong,
-    clearChart
+    clearChart,
+    getVideoForSong
   };
 };

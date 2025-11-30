@@ -5,6 +5,7 @@ import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { getChart, listCharts } from '../../src/index.js';
+import { enrichSongsWithVideos } from './youtube.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const envPath = join(__dirname, '..', '.env');
@@ -76,14 +77,20 @@ app.get('/api/charts', async (req, res) => {
 /**
  * GET /api/chart/:name
  * Returns chart data for specified chart and optional date
- * Query params: date (YYYY-MM-DD format)
+ * Query params: date (YYYY-MM-DD format), videos (number of songs to get videos for)
  */
 app.get('/api/chart/:name', async (req, res) => {
   try {
     const { name } = req.params;
-    const { date } = req.query;
+    const { date, videos: videoLimit } = req.query;
 
     const chart = await getChart(name, date || '');
+
+    // Enrich songs with YouTube video data
+    const limit = parseInt(videoLimit) || 20;
+    const apiKey = process.env.VITE_YOUTUBE_API_KEY;
+    chart.songs = await enrichSongsWithVideos(chart.songs, apiKey, limit);
+
     res.json({ success: true, data: chart });
   } catch (error) {
     console.error('Error fetching chart:', error.message);
@@ -101,8 +108,14 @@ app.get('/api/chart/:name', async (req, res) => {
  */
 app.get('/api/chart', async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, videos: videoLimit } = req.query;
     const chart = await getChart('hot-100', date || '');
+
+    // Enrich songs with YouTube video data
+    const limit = parseInt(videoLimit) || 20;
+    const apiKey = process.env.VITE_YOUTUBE_API_KEY;
+    chart.songs = await enrichSongsWithVideos(chart.songs, apiKey, limit);
+
     res.json({ success: true, data: chart });
   } catch (error) {
     console.error('Error fetching chart:', error.message);
