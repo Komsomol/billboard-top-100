@@ -2,6 +2,51 @@ import axios from 'axios';
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
+// Cache configuration
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const videoCache = new Map();
+
+/**
+ * Creates a cache key from artist and title
+ */
+const createCacheKey = (title, artist) => {
+  return `${artist}-${title}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+};
+
+/**
+ * Gets cached video data if not expired
+ */
+const getFromCache = (key) => {
+  const cached = videoCache.get(key);
+  if (!cached) return null;
+
+  // Check if expired
+  if (Date.now() - cached.timestamp > CACHE_TTL) {
+    videoCache.delete(key);
+    return null;
+  }
+
+  return cached.data;
+};
+
+/**
+ * Saves video data to cache
+ */
+const saveToCache = (key, data) => {
+  videoCache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+};
+
+/**
+ * Returns cache statistics
+ */
+export const getCacheStats = () => ({
+  size: videoCache.size,
+  keys: Array.from(videoCache.keys())
+});
+
 /**
  * Builds search query for finding official music videos
  * @param {string} title - Song title
@@ -18,9 +63,18 @@ export const buildSearchQuery = (title, artist) => {
 };
 
 /**
- * Searches YouTube for a single music video
+ * Searches YouTube for a single music video (with caching)
  */
 const searchVideo = async (title, artist, apiKey) => {
+  const cacheKey = createCacheKey(title, artist);
+
+  // Check cache first
+  const cached = getFromCache(cacheKey);
+  if (cached !== null) {
+    console.log(`Cache hit for "${title}" by ${artist}`);
+    return cached;
+  }
+
   try {
     const query = buildSearchQuery(title, artist);
 
@@ -35,18 +89,24 @@ const searchVideo = async (title, artist, apiKey) => {
       }
     });
 
+    let result = null;
     if (response.data.items && response.data.items.length > 0) {
       const video = response.data.items[0];
-      return {
+      result = {
         videoId: video.id.videoId,
         title: video.snippet.title,
         channelTitle: video.snippet.channelTitle
       };
     }
 
-    return null;
+    // Save to cache (even null results to avoid re-searching)
+    saveToCache(cacheKey, result);
+    console.log(`Cache miss for "${title}" - saved to cache`);
+
+    return result;
   } catch (error) {
     console.error(`YouTube search failed for "${title}":`, error.message);
+    // Don't cache errors - allow retry later
     return null;
   }
 };
@@ -89,7 +149,7 @@ export const enrichSongsWithVideos = async (songs, apiKey, limit = 20) => {
     const results = await Promise.all(promises);
     enrichedSongs.push(...results);
 
-    // Small delay between batches
+    // Small delay between batches (only if we made actual API calls)
     if (i + batchSize < songsToEnrich.length) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }

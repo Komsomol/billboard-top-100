@@ -86,8 +86,8 @@ app.get('/api/chart/:name', async (req, res) => {
 
     const chart = await getChart(name, date || '');
 
-    // Enrich songs with YouTube video data
-    const limit = parseInt(videoLimit) || 20;
+    // Enrich songs with YouTube video data (default 10 to save API quota)
+    const limit = parseInt(videoLimit) || 10;
     const apiKey = process.env.VITE_YOUTUBE_API_KEY;
     chart.songs = await enrichSongsWithVideos(chart.songs, apiKey, limit);
 
@@ -111,8 +111,8 @@ app.get('/api/chart', async (req, res) => {
     const { date, videos: videoLimit } = req.query;
     const chart = await getChart('hot-100', date || '');
 
-    // Enrich songs with YouTube video data
-    const limit = parseInt(videoLimit) || 20;
+    // Enrich songs with YouTube video data (default 10 to save API quota)
+    const limit = parseInt(videoLimit) || 10;
     const apiKey = process.env.VITE_YOUTUBE_API_KEY;
     chart.songs = await enrichSongsWithVideos(chart.songs, apiKey, limit);
 
