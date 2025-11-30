@@ -105,7 +105,19 @@ const searchVideo = async (title, artist, apiKey) => {
 
     return result;
   } catch (error) {
-    console.error(`YouTube search failed for "${title}":`, error.message);
+    // Log detailed error info
+    const status = error.response?.status || 'unknown';
+    const apiError = error.response?.data?.error;
+
+    if (apiError) {
+      console.error(`YouTube API error for "${title}": [${status}] ${apiError.message}`);
+      if (apiError.errors?.[0]?.reason) {
+        console.error(`  Reason: ${apiError.errors[0].reason}`);
+      }
+    } else {
+      console.error(`YouTube search failed for "${title}": [${status}] ${error.message}`);
+    }
+
     // Don't cache errors - allow retry later
     return null;
   }
