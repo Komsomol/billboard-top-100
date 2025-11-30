@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hot 100 Chart | Billboard</title>
+</head>
+<body>
+  <!-- Date selector -->
+  <div data-date="2024-11-23"></div>
+  <button class="date-selector__button">November 23, 2024</button>
+
+  <!-- Chart Row 1 -->
+  <ul class="o-chart-results-list-row" data-detail-target="1">
+    <li class="o-chart-results-list__item">
+      <span class="c-label">1</span>
+    </li>
+    <li class="o-chart-results-list__item">
+      <div class="c-lazy-image">
+        <img class="c-lazy-image__img" src="https://charts-static.billboard.com/img/2024/01/artist-abc-song-one-180x180.jpg" alt="">
+      </div>
+    </li>
+    <li class="o-chart-results-list__item">
+      <h3 class="c-title">Test Song One</h3>
+      <span class="c-label a-no-trucate">
+        <a href="/artist/test-artist">Test Artist</a>
+      </span>
+    </li>
+    <li class="o-chart-results-list__item">
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">LW</span>
+        <span class="c-label">2</span>
+      </div>
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">PEAK</span>
+        <span class="c-label">1</span>
+      </div>
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">WEEKS</span>
+        <span class="c-label">10</span>
+      </div>
+    </li>
+  </ul>
+
+  <!-- Chart Row 2 -->
+  <ul class="o-chart-results-list-row" data-detail-target="2">
+    <li class="o-chart-results-list__item">
+      <span class="c-label">2</span>
+    </li>
+    <li class="o-chart-results-list__item">
+      <div class="c-lazy-image">
+        <img class="c-lazy-image__img" src="https://charts-static.billboard.com/img/2024/02/another-artist-xyz-song-two-180x180.jpg" alt="">
+      </div>
+    </li>
+    <li class="o-chart-results-list__item">
+      <h3 class="c-title">Test Song Two</h3>
+      <span class="c-label a-no-trucate">Another Artist</span>
+    </li>
+    <li class="o-chart-results-list__item">
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">LW</span>
+        <span class="c-label">1</span>
+      </div>
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">PEAK</span>
+        <span class="c-label">1</span>
+      </div>
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">WEEKS</span>
+        <span class="c-label">15</span>
+      </div>
+    </li>
+  </ul>
+
+  <!-- Chart Row 3 - With lazy-loaded image -->
+  <ul class="o-chart-results-list-row" data-detail-target="3">
+    <li class="o-chart-results-list__item">
+      <span class="c-label">3</span>
+    </li>
+    <li class="o-chart-results-list__item">
+      <div class="c-lazy-image">
+        <img class="c-lazy-image__img" src="https://www.billboard.com/wp-content/themes/vip/pmc-billboard-2021/assets/public/lazyload-fallback.gif" data-lazy-src="https://charts-static.billboard.com/img/2024/03/third-artist-song-three-344x344.jpg" alt="Lazy loaded image">
+      </div>
+    </li>
+    <li class="o-chart-results-list__item">
+      <h3 class="c-title">Test Song Three</h3>
+      <span class="c-label a-no-trucate">Third Artist Featuring Someone</span>
+    </li>
+    <li class="o-chart-results-list__item">
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">LW</span>
+        <span class="c-label">-</span>
+      </div>
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">PEAK</span>
+        <span class="c-label">3</span>
+      </div>
+      <div class="lrv-u-flex lrv-u-justify-content-space-between">
+        <span class="c-span">WEEKS</span>
+        <span class="c-label">1</span>
+      </div>
+    </li>
+  </ul>
+</body>
+</html>

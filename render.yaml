@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: billboard-top-100
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: VITE_YOUTUBE_API_KEY
+        sync: false  # Set this manually in Render dashboard for security
