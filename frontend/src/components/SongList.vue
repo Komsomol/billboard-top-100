@@ -37,9 +37,8 @@ const formattedDate = computed(() => {
       </span>
     </div>
 
-    <!-- Songs Grid - Single column on mobile, 2 columns on large desktop -->
-    <div class="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-5
-                xl:grid xl:grid-cols-2 xl:gap-6">
+    <!-- Songs List - Single column layout -->
+    <div class="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-5">
       <SongCard
         v-for="song in songs"
         :key="`${song.rank}-${song.title}`"

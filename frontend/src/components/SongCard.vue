@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
   song: {
@@ -11,6 +11,18 @@ const props = defineProps({
     default: null
   }
 });
+
+const showModal = ref(false);
+
+const openModal = () => {
+  showModal.value = true;
+  document.body.style.overflow = 'hidden';
+};
+
+const closeModal = () => {
+  showModal.value = false;
+  document.body.style.overflow = '';
+};
 
 const rankClass = computed(() => {
   if (props.song.rank === 1) return 'text-yellow-400';
@@ -80,22 +92,20 @@ const positionChange = computed(() => {
     </div>
 
     <!-- Play Button -->
-    <a
+    <button
       v-if="video"
-      :href="video.watchUrl"
-      target="_blank"
-      rel="noopener"
+      @click="openModal"
       class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11
              flex items-center justify-center
              bg-red-600 hover:bg-red-500 hover:scale-110
              rounded-full flex-shrink-0
-             transition-all duration-150"
-      title="Play on YouTube"
+             transition-all duration-150 cursor-pointer"
+      title="Play Video"
     >
       <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
         <path d="M8 5v14l11-7z"/>
       </svg>
-    </a>
+    </button>
     <div v-else
          class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11
                 flex items-center justify-center
@@ -106,4 +116,47 @@ const positionChange = computed(() => {
       </svg>
     </div>
   </div>
+
+  <!-- Video Modal -->
+  <Teleport to="body">
+    <div
+      v-if="showModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90"
+      @click.self="closeModal"
+    >
+      <!-- Modal Content -->
+      <div class="relative w-full max-w-4xl">
+        <!-- Close Button -->
+        <button
+          @click="closeModal"
+          class="absolute -top-12 right-0 w-10 h-10
+                 flex items-center justify-center
+                 text-white/70 hover:text-white
+                 transition-colors cursor-pointer"
+        >
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Song Info -->
+        <div class="mb-4 text-center">
+          <h3 class="text-lg sm:text-xl font-semibold text-white">{{ song.title }}</h3>
+          <p class="text-sm sm:text-base text-gray-400">{{ song.artist }}</p>
+        </div>
+
+        <!-- Video Player -->
+        <div class="relative w-full" style="padding-bottom: 56.25%;">
+          <iframe
+            v-if="video"
+            :src="`${video.embedUrl}?autoplay=1`"
+            class="absolute inset-0 w-full h-full rounded-lg"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
