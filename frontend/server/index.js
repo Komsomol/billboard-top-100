@@ -50,10 +50,17 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Serve static files in production
+// Vite middleware for development, static files for production
+let vite;
 if (isProduction) {
   const distPath = join(__dirname, '..', 'dist');
   app.use(express.static(distPath));
+} else {
+  const { createServer } = await import('vite');
+  vite = await createServer({
+    server: { middlewareMode: true },
+    appType: 'spa'
+  });
 }
 
 /**
@@ -82,17 +89,19 @@ app.get('/api/chart', async (req, res) => {
   }
 });
 
-// Serve SPA for all other routes in production
+// Serve SPA for all other routes
 if (isProduction) {
   app.get('*', (req, res) => {
     const distPath = join(__dirname, '..', 'dist');
     res.sendFile(join(distPath, 'index.html'));
   });
+} else {
+  // Use Vite middleware for development
+  app.use(vite.middlewares);
 }
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Billboard API server running on http://localhost:${PORT}`);
-  console.log('Available endpoints:');
-  console.log('  GET /api/chart - Hot 100 (current week)');
+  console.log(`Billboard server running on http://localhost:${PORT}`);
+  console.log(isProduction ? 'Mode: Production' : 'Mode: Development (Vite HMR enabled)');
 });

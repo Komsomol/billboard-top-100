@@ -1,24 +1,24 @@
 import axios from 'axios';
 
-const API_BASE = '/api';
-
 /**
- * Fetches chart data for a specific chart
- * @param {string} chartName - Chart name (e.g., 'hot-100')
- * @param {string} [date] - Optional date in YYYY-MM-DD format
- * @returns {Promise<Object>} Chart data with songs array
+ * Fetches chart data
+ * In production: loads pre-rendered static JSON
+ * In development: calls local API server
  */
-export const fetchChart = async (chartName = 'hot-100', date = '') => {
+export const fetchChart = async () => {
   try {
-    const url = date
-      ? `${API_BASE}/chart/${chartName}?date=${date}`
-      : `${API_BASE}/chart/${chartName}`;
+    // In production, load static pre-rendered data
+    // In development, call the API server
+    const isDev = import.meta.env.DEV;
+    const url = isDev ? '/api/chart' : '/data/chart.json';
 
     const response = await axios.get(url);
-    if (!response.data.success) {
-      throw new Error(response.data.error);
+    const data = isDev ? response.data : response.data;
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load chart data');
     }
-    return response.data.data;
+    return data.data;
   } catch (error) {
     console.error('Failed to fetch chart:', error.message);
     throw error;
