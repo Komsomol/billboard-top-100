@@ -31,7 +31,7 @@ const saveCache = (cache) => {
 const buildSearchQuery = (title, artist) => {
   const cleanTitle = title.replace(/\(.*?\)/g, '').trim();
   const cleanArtist = artist.split(/,|Featuring|&/i)[0].trim();
-  return `${cleanArtist} ${cleanTitle} official music video`;
+  return `${cleanArtist} ${cleanTitle} official music video -lyrics`;
 };
 
 const searchVideo = async (title, artist, apiKey) => {
