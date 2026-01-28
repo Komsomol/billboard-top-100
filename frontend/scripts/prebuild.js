@@ -1,11 +1,32 @@
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import { getChart } from '../../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Load .env for local runs (CI sets env vars directly)
+dotenv.config({ path: join(__dirname, '..', '.env') });
+const CACHE_PATH = join(__dirname, 'video-cache.json');
+
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+
+const cacheKey = (title, artist) => `${artist} - ${title}`;
+
+const loadCache = () => {
+  if (!existsSync(CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(CACHE_PATH, 'utf-8'));
+  } catch {
+    console.warn('Failed to read video cache, starting fresh');
+    return {};
+  }
+};
+
+const saveCache = (cache) => {
+  writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2));
+};
 
 const buildSearchQuery = (title, artist) => {
   const cleanTitle = title.replace(/\(.*?\)/g, '').trim();
@@ -50,18 +71,32 @@ const enrichSongsWithVideos = async (songs, apiKey, limit = 20) => {
     return songs;
   }
 
+  const cache = loadCache();
   const songsToEnrich = songs.slice(0, limit);
   const enrichedSongs = [];
+  let cacheHits = 0;
+  let apiCalls = 0;
 
   for (const song of songsToEnrich) {
+    const key = cacheKey(song.title, song.artist);
+    const cached = key in cache;
+
+    if (cached) {
+      cacheHits++;
+      enrichedSongs.push({ ...song, video: cache[key] });
+      continue;
+    }
+
+    apiCalls++;
     const video = await searchVideo(song.title, song.artist, apiKey);
-    enrichedSongs.push({
-      ...song,
-      video: video || null
-    });
+    cache[key] = video || null;
+    enrichedSongs.push({ ...song, video: video || null });
     // Small delay to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 100));
   }
+
+  saveCache(cache);
+  console.log(`Video cache: ${cacheHits} hits, ${apiCalls} API calls`);
 
   return enrichedSongs;
 };

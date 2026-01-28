@@ -1,73 +1,79 @@
 {
   "success": true,
   "data": {
-    "week": "2026-01-10",
+    "week": "2026-01-31",
     "songs": [
       {
         "rank": 1,
-        "title": "The Fate Of Ophelia",
-        "artist": "Taylor Swift",
-        "cover": "https://charts-static.billboard.com/img/2006/07/taylor-swift-vug-180x180.jpg",
+        "title": "I Just Might",
+        "artist": "Bruno Mars",
+        "cover": "https://charts-static.billboard.com/img/2010/01/bruno-mars-uw0-180x180.jpg",
         "position": {
-          "positionLastWeek": 28,
+          "positionLastWeek": 1,
           "peakPosition": 1,
-          "weeksOnChart": 13
-        }
+          "weeksOnChart": 2
+        },
+        "video": null
       },
       {
         "rank": 2,
-        "title": "Golden",
-        "artist": "HUNTR/X: EJAE, Audrey Nuna & REI AMI",
-        "cover": "https://charts-static.billboard.com/img/2025/07/huntrxejaeaudreynunareiami-o2t-golden-ozh-180x180.jpg",
-        "position": {
-          "positionLastWeek": 25,
-          "peakPosition": 1,
-          "weeksOnChart": 28
-        }
-      },
-      {
-        "rank": 3,
-        "title": "Ordinary",
-        "artist": "Alex Warren",
-        "cover": "https://charts-static.billboard.com/img/2025/02/alexwarren-vcb-ordinary-jb8-180x180.jpg",
-        "position": {
-          "positionLastWeek": null,
-          "peakPosition": 1,
-          "weeksOnChart": 46
-        }
-      },
-      {
-        "rank": 4,
         "title": "Man I Need",
         "artist": "Olivia Dean",
         "cover": "https://charts-static.billboard.com/img/2025/08/oliviadean-lxn-manineed-jej-180x180.jpg",
         "position": {
-          "positionLastWeek": 36,
-          "peakPosition": 4,
-          "weeksOnChart": 19
-        }
+          "positionLastWeek": 4,
+          "peakPosition": 2,
+          "weeksOnChart": 22
+        },
+        "video": null
+      },
+      {
+        "rank": 3,
+        "title": "The Fate Of Ophelia",
+        "artist": "Taylor Swift",
+        "cover": "https://charts-static.billboard.com/img/2025/10/taylor-swift-vug-thefateofophelia-ki7-180x180.jpg",
+        "position": {
+          "positionLastWeek": 2,
+          "peakPosition": 1,
+          "weeksOnChart": 16
+        },
+        "video": null
+      },
+      {
+        "rank": 4,
+        "title": "Golden",
+        "artist": "HUNTR/X: EJAE, Audrey Nuna & REI AMI",
+        "cover": "https://charts-static.billboard.com/img/2025/07/huntrxejaeaudreynunareiami-o2t-golden-ozh-180x180.jpg",
+        "position": {
+          "positionLastWeek": 3,
+          "peakPosition": 1,
+          "weeksOnChart": 31
+        },
+        "video": null
       },
       {
         "rank": 5,
-        "title": "Choosin' Texas",
-        "artist": "Ella Langley",
-        "cover": "https://charts-static.billboard.com/img/2023/06/ellalangley-gaq-180x180.jpg",
+        "title": "Ordinary",
+        "artist": "Alex Warren",
+        "cover": "https://charts-static.billboard.com/img/2025/02/alexwarren-vcb-ordinary-jb8-180x180.jpg",
         "position": {
-          "positionLastWeek": 48,
-          "peakPosition": 5,
-          "weeksOnChart": 11
-        }
+          "positionLastWeek": 5,
+          "peakPosition": 1,
+          "weeksOnChart": 49
+        },
+        "video": null
       },
       {
         "rank": 6,
-        "title": "Folded",
-        "artist": "Kehlani",
-        "cover": "https://charts-static.billboard.com/img/2025/06/kehlani-48p-folded-beh-180x180.jpg",
+        "title": "Choosin' Texas",
+        "artist": "Ella Langley",
+        "cover": "https://charts-static.billboard.com/img/2025/11/ellalangley-gaq-choosintexas-3s2-180x180.jpg",
         "position": {
-          "positionLastWeek": 51,
-          "peakPosition": 6,
-          "weeksOnChart": 29
-        }
+          "positionLastWeek": 6,
+          "peakPosition": 5,
+          "weeksOnChart": 14
+        },
+        "video": null
       },
       {
         "rank": 7,
@@ -75,65 +81,71 @@
         "artist": "sombr",
         "cover": "https://charts-static.billboard.com/img/2025/02/sombr-kpn-backtofriends-xkb-180x180.jpg",
         "position": {
-          "positionLastWeek": 52,
+          "positionLastWeek": 8,
           "peakPosition": 7,
-          "weeksOnChart": 40
-        }
+          "weeksOnChart": 43
+        },
+        "video": null
       },
       {
         "rank": 8,
+        "title": "Folded",
+        "artist": "Kehlani",
+        "cover": "https://charts-static.billboard.com/img/2025/06/kehlani-48p-folded-beh-180x180.jpg",
+        "position": {
+          "positionLastWeek": 9,
+          "peakPosition": 6,
+          "weeksOnChart": 32
+        },
+        "video": null
+      },
+      {
+        "rank": 9,
+        "title": "End Of Beginning",
+        "artist": "Djo",
+        "cover": "https://charts-static.billboard.com/img/2024/02/djo-fyo-endofbeginning-lak-180x180.jpg",
+        "position": {
+          "positionLastWeek": 7,
+          "peakPosition": 6,
+          "weeksOnChart": 25
+        },
+        "video": null
+      },
+      {
+        "rank": 10,
         "title": "Opalite",
         "artist": "Taylor Swift",
         "cover": "https://charts-static.billboard.com/img/2006/07/taylor-swift-vug-180x180.jpg",
         "position": {
-          "positionLastWeek": 54,
+          "positionLastWeek": 10,
           "peakPosition": 2,
-          "weeksOnChart": 13
-        }
+          "weeksOnChart": 16
+        },
+        "video": null
       },
       {
-        "rank": 9,
+        "rank": 11,
         "title": "Mutt",
         "artist": "Leon Thomas",
         "cover": "https://charts-static.billboard.com/img/2024/10/leonthomas-y3w-mutt-ch5-180x180.jpg",
         "position": {
-          "positionLastWeek": null,
+          "positionLastWeek": 11,
           "peakPosition": 6,
-          "weeksOnChart": 47
-        }
-      },
-      {
-        "rank": 10,
-        "title": "Daisies",
-        "artist": "Justin Bieber",
-        "cover": "https://charts-static.billboard.com/img/2009/07/justin-bieber-dj8-180x180.jpg",
-        "position": {
-          "positionLastWeek": null,
-          "peakPosition": 2,
-          "weeksOnChart": 24
-        }
-      },
-      {
-        "rank": 11,
-        "title": "I Got Better",
-        "artist": "Morgan Wallen",
-        "cover": "https://charts-static.billboard.com/img/2025/05/morgan-wallen-eos-igotbetter-8s9-180x180.jpg",
-        "position": {
-          "positionLastWeek": null,
-          "peakPosition": 7,
-          "weeksOnChart": 29
-        }
+          "weeksOnChart": 50
+        },
+        "video": null
       },
       {
         "rank": 12,
-        "title": "FDO",
-        "artist": "Pooh Shiesty",
-        "cover": "https://charts-static.billboard.com/img/2020/10/poohshiesty-klv-180x180.jpg",
+        "title": "What You Saying",
+        "artist": "Lil Uzi Vert",
+        "cover": "https://charts-static.billboard.com/img/2026/01/lil-uzi-vert-z30-whatyousaying-y59-180x180.jpg",
         "position": {
-          "positionLastWeek": 53,
+          "positionLastWeek": 12,
           "peakPosition": 12,
-          "weeksOnChart": 3
-        }
+          "weeksOnChart": 4
+        },
+        "video": null
       },
       {
         "rank": 13,
@@ -141,87 +153,95 @@
         "artist": "RAYE",
         "cover": "https://charts-static.billboard.com/img/2015/09/raye-dj0-180x180.jpg",
         "position": {
-          "positionLastWeek": 56,
+          "positionLastWeek": 18,
           "peakPosition": 13,
-          "weeksOnChart": 14
-        }
+          "weeksOnChart": 17
+        },
+        "video": null
       },
       {
         "rank": 14,
+        "title": "I Got Better",
+        "artist": "Morgan Wallen",
+        "cover": "https://charts-static.billboard.com/img/2025/05/morgan-wallen-eos-igotbetter-8s9-180x180.jpg",
+        "position": {
+          "positionLastWeek": 14,
+          "peakPosition": 7,
+          "weeksOnChart": 32
+        },
+        "video": null
+      },
+      {
+        "rank": 15,
+        "title": "Daisies",
+        "artist": "Justin Bieber",
+        "cover": "https://charts-static.billboard.com/img/2009/07/justin-bieber-dj8-180x180.jpg",
+        "position": {
+          "positionLastWeek": 15,
+          "peakPosition": 2,
+          "weeksOnChart": 27
+        },
+        "video": null
+      },
+      {
+        "rank": 16,
+        "title": "wgft",
+        "artist": "Gunna",
+        "cover": "https://charts-static.billboard.com/img/2016/09/gunna-t8f-180x180.jpg",
+        "position": {
+          "positionLastWeek": 27,
+          "peakPosition": 16,
+          "weeksOnChart": 24
+        },
+        "video": null
+      },
+      {
+        "rank": 17,
         "title": "So Easy (To Fall In Love)",
         "artist": "Olivia Dean",
         "cover": "https://charts-static.billboard.com/img/2022/01/oliviadean-8k4-180x180.jpg",
         "position": {
-          "positionLastWeek": 57,
+          "positionLastWeek": 16,
           "peakPosition": 14,
-          "weeksOnChart": 14
-        }
+          "weeksOnChart": 17
+        },
+        "video": null
       },
       {
-        "rank": 15,
+        "rank": 18,
         "title": "20 Cigarettes",
         "artist": "Morgan Wallen",
         "cover": "https://charts-static.billboard.com/img/2016/08/morgan-wallen-eos-180x180.jpg",
         "position": {
-          "positionLastWeek": 60,
+          "positionLastWeek": 19,
           "peakPosition": 15,
-          "weeksOnChart": 32
-        }
-      },
-      {
-        "rank": 16,
-        "title": "End Of Beginning",
-        "artist": "Djo",
-        "cover": "https://charts-static.billboard.com/img/2024/02/djo-fyo-endofbeginning-lak-180x180.jpg",
-        "position": {
-          "positionLastWeek": null,
-          "peakPosition": 11,
-          "weeksOnChart": 22
-        }
-      },
-      {
-        "rank": 17,
-        "title": "It Depends",
-        "artist": "Chris Brown",
-        "cover": "https://charts-static.billboard.com/img/2025/08/chris-brown-t69-itdepends-6sf-180x180.jpg",
-        "position": {
-          "positionLastWeek": null,
-          "peakPosition": 16,
-          "weeksOnChart": 22
-        }
-      },
-      {
-        "rank": 18,
-        "title": "Manchild",
-        "artist": "Sabrina Carpenter",
-        "cover": "https://charts-static.billboard.com/img/2025/06/sabrina-carpenter-l0r-manchild-cmz-180x180.jpg",
-        "position": {
-          "positionLastWeek": null,
-          "peakPosition": 1,
-          "weeksOnChart": 26
-        }
+          "weeksOnChart": 35
+        },
+        "video": null
       },
       {
         "rank": 19,
-        "title": "What I Want",
-        "artist": "Morgan Wallen",
-        "cover": "https://charts-static.billboard.com/img/2016/08/morgan-wallen-eos-180x180.jpg",
+        "title": "Plastic Cigarette",
+        "artist": "Zach Bryan",
+        "cover": "https://charts-static.billboard.com/img/2019/09/zachbryan-6zf-180x180.jpg",
         "position": {
-          "positionLastWeek": null,
-          "peakPosition": 1,
-          "weeksOnChart": 28
-        }
+          "positionLastWeek": 13,
+          "peakPosition": 13,
+          "weeksOnChart": 2
+        },
+        "video": null
       },
       {
         "rank": 20,
-        "title": "Tit For Tat",
-        "artist": "Tate McRae",
-        "cover": "https://charts-static.billboard.com/img/2019/11/tatemcrae-vd8-180x180.jpg",
+        "title": "Die On This Hill",
+        "artist": "Sienna Spiro",
+        "cover": "https://charts-static.billboard.com/img/2025/11/siennaspiro-o5d-dieonthishill-f28-180x180.jpg",
         "position": {
-          "positionLastWeek": 58,
-          "peakPosition": 3,
-          "weeksOnChart": 14
-        }
+          "positionLastWeek": 21,
+          "peakPosition": 20,
+          "weeksOnChart": 5
+        },
+        "video": null
       }
     ],
     "previousWeek": {
@@ -233,5 +253,5 @@
       "date": ""
     }
   },
-  "generatedAt": "2026-01-12T14:45:22.864Z"
+  "generatedAt": "2026-01-28T00:12:41.161Z"
 }
