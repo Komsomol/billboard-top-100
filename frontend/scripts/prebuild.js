@@ -80,6 +80,15 @@ const searchVideo = async (title, artist, apiKey) => {
     const response = await fetch(`${YOUTUBE_API_BASE}/search?${params}`);
     const data = await response.json();
 
+    if (data.error) {
+      const msg = `YouTube API error for "${artist} - ${title}": ${data.error.message} (${data.error.code})`;
+      if (data.error.errors?.[0]?.reason === 'quotaExceeded') {
+        throw new Error(`YouTube API quota exceeded. Remaining songs will have no videos.`);
+      }
+      console.error(msg);
+      return null;
+    }
+
     if (data.items?.length > 0) {
       const cleanArtist = artist.split(/,|Featuring|&/i)[0].trim().toLowerCase();
       const video = pickBestVideo(data.items, cleanArtist);
@@ -119,11 +128,21 @@ const enrichSongsWithVideos = async (songs, apiKey, limit = 20) => {
     }
 
     apiCalls++;
-    const video = await searchVideo(song.title, song.artist, apiKey);
-    if (video) {
-      cache[key] = video;
+    try {
+      const video = await searchVideo(song.title, song.artist, apiKey);
+      if (video) {
+        cache[key] = video;
+      }
+      enrichedSongs.push({ ...song, video: video || null });
+    } catch (error) {
+      console.error(error.message);
+      // Quota exceeded - add remaining songs without videos and stop
+      enrichedSongs.push({ ...song, video: null });
+      for (const remaining of songsToEnrich.slice(enrichedSongs.length)) {
+        enrichedSongs.push({ ...remaining, video: null });
+      }
+      break;
     }
-    enrichedSongs.push({ ...song, video: video || null });
     // Small delay to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 100));
   }
