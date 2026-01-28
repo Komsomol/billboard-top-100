@@ -134,6 +134,13 @@ const searchVideo = async (title, artist) => {
       .filter(r => r.score >= 0)
       .sort((a, b) => b.score - a.score);
 
+    // Debug: log scoring for visibility in CI
+    console.log(`  "${artist} - ${title}" results:`);
+    results.forEach(r => {
+      const s = scoreResult(r.title, r.channel, cleanArtist, cleanTitle);
+      console.log(`    [${s}] ${r.title} (${r.channel}) id=${r.id}`);
+    });
+
     const best = scored.length > 0 ? scored[0] : results[0];
     return {
       videoId: best.id,
