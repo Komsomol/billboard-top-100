@@ -32,6 +32,9 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Install yt-dlp
+        run: pip install yt-dlp
+
       - name: Restore video cache
         uses: actions/cache@v4
         with:
@@ -42,8 +45,6 @@ jobs:
 
       - name: Build (with prebuild)
         working-directory: frontend
-        env:
-          VITE_YOUTUBE_API_KEY: ${{ secrets.VITE_YOUTUBE_API_KEY }}
         run: npm run build
 
       - name: Install Wrangler
