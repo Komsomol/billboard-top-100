@@ -81,7 +81,7 @@ const enrichSongsWithVideos = async (songs, apiKey, limit = 20) => {
     const key = cacheKey(song.title, song.artist);
     const cached = key in cache;
 
-    if (cached) {
+    if (cached && cache[key] !== null) {
       cacheHits++;
       enrichedSongs.push({ ...song, video: cache[key] });
       continue;
@@ -89,7 +89,9 @@ const enrichSongsWithVideos = async (songs, apiKey, limit = 20) => {
 
     apiCalls++;
     const video = await searchVideo(song.title, song.artist, apiKey);
-    cache[key] = video || null;
+    if (video) {
+      cache[key] = video;
+    }
     enrichedSongs.push({ ...song, video: video || null });
     // Small delay to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 100));
