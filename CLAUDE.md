@@ -2,12 +2,13 @@
 
 ## Project Overview
 
-A Node.js module that scrapes Billboard.com chart data to retrieve top songs, albums, and artists programmatically. Published as an npm package.
+A Node.js module that scrapes Billboard.com chart data to retrieve top songs, albums, and artists programmatically. Published as an npm package. Includes a Vue 3 frontend deployed to Cloudflare Pages.
 
 - **Package Name**: `billboard-top-100`
 - **Version**: 4.0.0
 - **License**: MIT
-- **Repository**: https://github.com/darthbatman/billboard-top-100
+- **Repository**: https://github.com/Komsomol/billboard-top-100
+- **Live Site**: https://billboard-hot-100.pages.dev
 - **Node.js**: >=18.0.0 required
 - **Module System**: ES Modules (ESM)
 
@@ -18,410 +19,255 @@ A Node.js module that scrapes Billboard.com chart data to retrieve top songs, al
 ```
 billboard-top-100/
 ├── src/                      # Core Node.js module
-│   ├── index.js              # Main entry point, exports public API
-│   ├── chart-fetcher.js      # HTTP fetching with retry logic
-│   ├── chart-parser.js       # HTML parsing and data extraction
+│   ├── index.js              # Public API: getChart(), listCharts()
+│   ├── chart-fetcher.js      # HTTP fetching with retry logic (axios)
+│   ├── chart-parser.js       # HTML parsing with Cheerio (2024+ selectors)
 │   ├── date-utils.js         # Date formatting utilities
-│   ├── constants.js          # Configuration constants
-│   └── errors.js             # Custom error classes
-├── tests/                    # Jest test suite
-│   ├── fixtures/
-│   │   ├── sample-chart.html
-│   │   └── sample-charts-list.html
+│   ├── constants.js          # URLs, timeouts, CSS selectors, error codes
+│   └── errors.js             # BillboardError class + factory functions
+├── tests/                    # Jest test suite (--experimental-vm-modules)
+│   ├── fixtures/             # HTML fixtures for parser tests
 │   ├── chart-fetcher.test.js
 │   ├── chart-parser.test.js
 │   ├── date-utils.test.js
 │   ├── errors.test.js
 │   ├── index.test.js
-│   └── test.js               # Manual integration test
-├── frontend/                 # Vue 3 + Vite frontend
-│   ├── server/               # Express API server
-│   ├── src/                  # Vue application
-│   ├── .env                  # Environment variables
+│   └── test.js               # Manual integration test (hits live site)
+├── frontend/                 # Vue 3 + Vite + Tailwind CSS v4
+│   ├── server/
+│   │   ├── index.js          # Express API server (dev mode)
+│   │   └── youtube.js        # YouTube API client (dev mode only)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── SongCard.vue  # Song display with video modal
+│   │   │   ├── SongList.vue  # Songs list container
+│   │   │   ├── LoadingState.vue
+│   │   │   └── ErrorState.vue
+│   │   ├── composables/
+│   │   │   └── useChart.js   # Chart data state management
+│   │   ├── services/
+│   │   │   └── billboard.js  # API client (dev: /api, prod: /data/chart.json)
+│   │   ├── App.vue           # Root component
+│   │   └── main.js
+│   ├── scripts/
+│   │   └── prebuild.js       # Static chart data generator (yt-dlp)
+│   ├── public/data/           # Generated chart.json (gitignored)
+│   ├── .env                  # Local env vars (gitignored)
 │   └── package.json
-├── billboard-top-100.js      # Legacy entry (re-exports from src/)
+├── .github/workflows/
+│   └── deploy.yml            # Cloudflare Pages CI/CD
 ├── package.json
 ├── jest.config.js
 └── CLAUDE.md
 ```
 
-### Core Modules
+### Data Flow
 
-#### `src/index.js`
-Main entry point exporting the public API:
-- `getChart(chartName?, date?)` - Fetch chart data (Promise-based with callback fallback)
-- `listCharts()` - List all available charts (Promise-based with callback fallback)
-- `BillboardError` - Custom error class
-- `ErrorCodes` - Error code constants
+#### Production (Cloudflare Pages)
+```
+GitHub Actions (daily 6 AM UTC cron or push to master)
+  → npm run build
+    → prebuild.js: fetch Billboard Hot 100
+    → prebuild.js: yt-dlp search for YouTube videos (cached)
+    → prebuild.js: write public/data/chart.json
+    → vite build: compile Vue app + static assets
+  → wrangler: deploy dist/ to Cloudflare Pages
+  → User loads site → fetches /data/chart.json (static file)
+```
 
-#### `src/chart-fetcher.js`
-Handles HTTP requests with:
-- Axios for HTTP client
-- 30-second timeout configuration
-- Retry logic (3 attempts) for transient failures
-- User-Agent headers to avoid blocking
+#### Development
+```
+npm run dev (from frontend/)
+  → Express server on :3001
+  → Vite dev server with HMR on :5173
+  → API calls: /api/chart → getChart() → Billboard.com → YouTube API
+```
 
-#### `src/chart-parser.js`
-Parses Billboard HTML using Cheerio (updated for 2024+ Billboard structure):
-- `parseChart(html)` - Parses chart page HTML
-- `parseChartsList(html)` - Parses charts index HTML
-- `extractRank($, row)` - Extracts rank from `data-detail-target` attribute
-- `extractTitle($, row)` - Extracts song title from `h3.c-title`
-- `extractArtist($, row)` - Extracts artist name from span/link
-- `extractCover($, row)` - Extracts cover image URL (prefers highest resolution, filters placeholders)
-- `extractPositionStats($, row)` - Extracts LW/Peak/Weeks stats
-- `extractChartWeek($)` - Extracts week date from `data-date` attribute
-- `extractText($, element, selector)` - Safe text extraction
-- `extractAttr($, element, selector, attr)` - Safe attribute extraction
-- `isValidImageUrl(url)` - Validates image URL (filters placeholders)
+## Core Module (src/)
 
-#### `src/date-utils.js`
-Date utilities:
-- `formatDateToYYYYMMDD(monthDayYear)` - Converts "Month Day, Year" to "YYYY-MM-DD"
-- `toTitleCase(str)` - Title-case string conversion
-- `isValidDateFormat(date)` - Validates YYYY-MM-DD format
-- `isValidChartName(name)` - Validates chart name format
-
-#### `src/constants.js`
-Configuration:
-- `BILLBOARD_BASE_URL` - https://www.billboard.com
-- `BILLBOARD_CHARTS_URL` - Charts endpoint
-- `REQUEST_TIMEOUT` - 30000ms
-- `MAX_RETRIES` - 3
-- `SELECTORS` - CSS selectors for parsing
-- `NeighboringWeek` - Enum (PREVIOUS, NEXT)
-- `ErrorCodes` - Error code constants
-
-#### `src/errors.js`
-Custom error handling:
-- `BillboardError` - Base error class with code and cause
-- Factory functions: `createNetworkError`, `createParseError`, `createNotFoundError`, `createInvalidInputError`, `createTimeoutError`
-
-## Public API
-
-### `getChart(chartName?, date?)`
-
-Fetches chart data for a specific chart and date.
+### Public API
 
 ```javascript
-import { getChart } from 'billboard-top-100';
+import { getChart, listCharts, BillboardError, ErrorCodes } from 'billboard-top-100';
 
-// Modern Promise/async-await
+// Fetch chart (defaults: hot-100, current week)
 const chart = await getChart('hot-100', '2024-01-15');
 
-// With defaults (hot-100, current week)
-const chart = await getChart();
-
-// Legacy callback API
-getChart('hot-100', '2024-01-15', (err, chart) => {
-  if (err) console.error(err);
-  else console.log(chart);
-});
-```
-
-**Parameters:**
-- `chartName` (string, optional) - Chart name (default: 'hot-100')
-- `date` (string, optional) - Date in YYYY-MM-DD format (default: current week)
-
-**Returns:** `Promise<Chart>`
-
-```typescript
-interface Chart {
-  week: string;           // "YYYY-MM-DD"
-  songs: Song[];
-  previousWeek: NeighborChart;
-  nextWeek: NeighborChart;
-}
-
-interface Song {
-  rank: number;
-  title: string;
-  artist: string;
-  cover: string;
-  position: {
-    positionLastWeek: number | null;
-    peakPosition: number | null;
-    weeksOnChart: number | null;
-  };
-}
-
-interface NeighborChart {
-  url: string;
-  date: string;
-}
-```
-
-### `listCharts()`
-
-Lists all available Billboard charts.
-
-```javascript
-import { listCharts } from 'billboard-top-100';
-
+// List all available charts
 const charts = await listCharts();
-// [{ name: 'Hot 100', url: 'https://...' }, ...]
 ```
 
-**Returns:** `Promise<ChartInfo[]>`
-
-### Error Handling
+### Data Structures
 
 ```javascript
-import { getChart, BillboardError, ErrorCodes } from 'billboard-top-100';
-
-try {
-  const chart = await getChart('invalid chart name');
-} catch (error) {
-  if (error instanceof BillboardError) {
-    console.log(error.code);    // 'INVALID_INPUT'
-    console.log(error.message); // Descriptive message
-    console.log(error.cause);   // Original error if wrapped
-  }
+// Chart object
+{
+  week: "2024-01-15",         // YYYY-MM-DD
+  songs: [{
+    rank: 1,
+    title: "Song Title",
+    artist: "Artist Name",
+    cover: "https://...",     // Highest resolution available
+    position: {
+      positionLastWeek: 2,    // or null
+      peakPosition: 1,        // or null
+      weeksOnChart: 5         // or null
+    }
+  }],
+  previousWeek: { url: "", date: "" },
+  nextWeek: { url: "", date: "" }
 }
 ```
 
-**Error Codes:**
-- `NETWORK_ERROR` - HTTP request failed
-- `PARSE_ERROR` - HTML parsing failed
-- `NOT_FOUND` - Chart data not found
-- `INVALID_INPUT` - Invalid parameters
-- `TIMEOUT` - Request timed out
+### Error Codes
+- `NETWORK_ERROR`, `PARSE_ERROR`, `NOT_FOUND`, `INVALID_INPUT`, `TIMEOUT`
 
-## Code Patterns
+### CSS Selectors (2024+ Billboard.com)
 
-### Functional Programming
-
-All modules follow functional programming principles:
-- Pure functions for data transformation
-- No side effects except in fetcher module
-- Immutable data patterns
-- Composition over inheritance
-
-### Error Handling
-
-All functions use try-catch with custom BillboardError:
-
+Defined in `src/chart-parser.js`. If Billboard changes HTML structure, update these:
 ```javascript
-try {
-  // operation
-} catch (error) {
-  if (error.code) {
-    throw error; // Re-throw BillboardError
-  }
-  throw createParseError('Failed to parse', error);
-}
+CHART_ROW: 'ul.o-chart-results-list-row'
+TITLE: 'h3.c-title'
+ARTIST: 'li.o-chart-results-list__item span.c-label a'
+ARTIST_SPAN: 'li.o-chart-results-list__item span.c-label.a-no-trucate'
+COVER_IMAGE: 'img.c-lazy-image__img'
 ```
+
+## Prebuild & Video Search (frontend/scripts/prebuild.js)
+
+### How It Works
+
+1. Fetches Billboard Hot 100 chart data
+2. Limits to top 20 songs
+3. For each song, searches YouTube via `yt-dlp` (no API key needed)
+4. Scores results to pick the best official music video
+5. Caches results in `frontend/scripts/video-cache.json`
+6. Writes final data to `frontend/public/data/chart.json`
+
+### Video Scoring Logic
+
+Fetches 5 YouTube results per song via `yt-dlp ytsearch5:` and scores them:
+- **+10**: Channel name contains the artist name (official channel)
+- **+8**: VEVO channel
+- **+5**: Title contains "Official Video" or "Official Music Video"
+- **-3**: Title contains "lyric" or "audio"
+- **-1 (filtered out)**: Channel in `BLOCKED_CHANNELS` list (e.g., "7clouds")
+
+Highest score wins. Falls back to first result if all are filtered.
+
+### Video Cache
+
+- **Path**: `frontend/scripts/video-cache.json` (gitignored)
+- **Format**: `{ "Artist - Title": { videoId, embedUrl, watchUrl } }`
+- **Only successful lookups are cached** -- null/failed results are retried next run
+- **CI persistence**: GitHub Actions `actions/cache@v4` with `video-cache-${{ github.run_id }}` key and `video-cache-` restore prefix
+- **Cache invalidation**: Only new songs entering the chart trigger yt-dlp searches
+
+### Running Locally
+
+```bash
+# Generate chart.json locally (requires yt-dlp installed)
+node frontend/scripts/prebuild.js
+
+# Full build (prebuild + vite)
+cd frontend && npm run build
+```
+
+### Modifying Video Search
+
+- **Block a channel**: Add to `BLOCKED_CHANNELS` array in `prebuild.js`
+- **Change search query**: Edit `buildSearchQuery()` function
+- **Adjust scoring**: Edit `scoreResult()` function
+- **Change result count**: Modify `ytsearch5:` number in `searchVideo()`
+
+## CI/CD (.github/workflows/deploy.yml)
+
+### Triggers
+- Push to main/master
+- Daily cron at 6 AM UTC (refreshes chart data)
+- Manual workflow_dispatch
+
+### Pipeline
+1. Checkout + Node.js 20 setup
+2. `pip install yt-dlp`
+3. `npm ci` (root + frontend)
+4. Restore video cache from previous run
+5. `npm run build` (prebuild + vite)
+6. Deploy `frontend/dist/` to Cloudflare Pages via wrangler
+
+### Required Secrets
+- `CLOUDFLARE_API_TOKEN` -- Cloudflare API token
+- `CLOUDFLARE_ACCOUNT_ID` -- Cloudflare account ID
+
+### No Longer Required
+- `VITE_YOUTUBE_API_KEY` -- replaced by yt-dlp (no API key needed)
 
 ## Development
 
 ### Setup
-
 ```bash
 npm install
+cd frontend && npm install
 ```
 
 ### Testing
-
 ```bash
-npm test              # Run all tests (uses --experimental-vm-modules)
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
+npm test              # Jest (--experimental-vm-modules for ESM)
+npm run test:watch
+npm run test:coverage # 80% lines/statements/functions, 70% branches
 
-# Manual integration test (hits live Billboard.com)
-node tests/test.js
+node tests/test.js    # Manual integration test (hits live Billboard.com)
 ```
 
-**Note**: Jest runs with `--experimental-vm-modules` flag to support ES Modules.
-
-### Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| axios | ^1.6.0 | HTTP client |
-| cheerio | ^1.0.0-rc.12 | HTML parsing |
-
-| Dev Package | Version | Purpose |
-|-------------|---------|---------|
-| jest | ^29.7.0 | Testing framework |
-
-## Known Limitations
-
-1. **Web Scraping Fragility**: Billboard.com HTML changes may break parsing. CSS selectors in `constants.js` may need updates.
-2. **Rate Limiting**: No built-in rate limiting; Billboard may block excessive requests.
-3. **Historical Data**: Some older charts may have different HTML structures.
-4. **Cover Images**: srcset parsing varies by chart position (rank 1 vs others).
-
-## CSS Selectors Used
-
-Key selectors for Billboard.com 2024+ structure (defined in `src/chart-parser.js`):
-
-```javascript
-SELECTORS = {
-  CHART_ROW: 'ul.o-chart-results-list-row',
-  TITLE: 'h3.c-title',
-  ARTIST: 'li.o-chart-results-list__item span.c-label a',
-  ARTIST_SPAN: 'li.o-chart-results-list__item span.c-label.a-no-trucate',
-  COVER_IMAGE: 'img.c-lazy-image__img',
-  RANK: 'li.o-chart-results-list__item span.c-label',
-  DATE_BUTTON: 'button.date-selector__button, [class*="date-selector"]',
-  CHART_PANEL_LINK: '.chart-panel__link, a[href*="/charts/"]'
-}
+### Local Frontend
+```bash
+cd frontend
+cp .env.example .env  # YouTube API key only needed for dev server mode
+npm run dev           # Express :3001 + Vite :5173
 ```
-
-### Image Extraction Logic
-- Rank extracted from `data-detail-target` attribute on chart row
-- Week date from `data-date` attribute or title parsing
-- Cover images prefer `data-lazy-src` over `src` (higher resolution)
-- Placeholder/fallback images (`lazyload-fallback`) are filtered out
-- Image resolution extracted from URL pattern (e.g., `180x180`, `344x344`)
 
 ## Troubleshooting
 
-### "No songs found" Error
-- Billboard.com HTML structure may have changed
-- Check if CSS selectors in `chart-parser.js` SELECTORS still match current site
-- Compare live HTML with expected selectors (e.g., `ul.o-chart-results-list-row`)
-- Run manual test: `node tests/test.js`
+### No songs found
+Billboard.com HTML structure changed. Update CSS selectors in `src/chart-parser.js`. Compare live HTML with expected selectors. Run `node tests/test.js` to verify.
 
-### Empty Data Fields
-- Parsing fell back to empty/null values
-- Check extraction functions in `chart-parser.js`
-- Verify `data-detail-target`, `h3.c-title`, `span.c-label.a-no-trucate` exist
+### Missing videos after deploy
+1. Check GitHub Actions logs for `yt-dlp` errors
+2. Verify `yt-dlp` is installed in CI (`pip install yt-dlp`)
+3. Check video cache: `gh cache list --repo Komsomol/billboard-top-100`
+4. To force fresh video search: delete all `video-cache-*` entries via `gh cache delete` and retrigger deploy
 
-### Missing Cover Images
-- Check if `img.c-lazy-image__img` selector matches
-- Verify `isValidImageUrl` isn't filtering valid images
-- Check for new placeholder URL patterns
+### Videos showing wrong content (lyrics, covers)
+1. Add offending channel to `BLOCKED_CHANNELS` in `prebuild.js`
+2. Delete video cache and rebuild
+3. Adjust scoring weights in `scoreResult()` if needed
 
-### Timeout Errors
-- Billboard.com may be slow or rate limiting
-- Increase `REQUEST_TIMEOUT` in `constants.js`
+### Stale video cache in CI
+GitHub Actions cache is immutable per key. The `video-cache-${{ github.run_id }}` key ensures each run saves a new cache. Old caches are restored via `restore-keys: video-cache-` prefix matching (most recent first).
 
-### Invalid Input Errors
-- Chart names must be lowercase with hyphens: `hot-100`, `billboard-200`
-- Dates must be YYYY-MM-DD format: `2024-01-15`
-
-## Migration from v3.x to v4.0
-
-v4.0 migrates from CommonJS to ES Modules (ESM):
-
-### Breaking Changes
-
-1. **ES Modules** - Use `import` instead of `require`
-2. **Node.js 18+** - Minimum Node.js version is now 18.0.0
-
-### Migration Steps
-
-```javascript
-// Before (v3.x - CommonJS)
-const { getChart, listCharts } = require('billboard-top-100');
-
-// After (v4.0 - ESM)
-import { getChart, listCharts } from 'billboard-top-100';
-```
-
-### If You Must Use CommonJS
-
-For legacy projects that cannot migrate to ESM, use dynamic import:
-
-```javascript
-// CommonJS compatibility (async context required)
-const { getChart, listCharts } = await import('billboard-top-100');
-```
-
-## Migration from v2.x
-
-v3.0+ is backwards compatible but adds modern features:
-
-1. **Promise support** - All methods now return Promises
-2. **Better errors** - BillboardError with codes and causes
-3. **Input validation** - Invalid inputs throw INVALID_INPUT errors
-4. **Modern dependencies** - axios replaces deprecated request library
-
-Legacy callback API still works:
-```javascript
-// Still supported
-getChart('hot-100', (err, chart) => { ... });
-```
-
----
-
-## Frontend Application
-
-A Vue 3 + Vite frontend with YouTube music video integration.
-
-### Frontend Structure
-
-```
-frontend/
-├── server/
-│   └── index.js              # Express API server
-├── src/
-│   ├── components/
-│   │   ├── ChartSelector.vue # Chart/date selection
-│   │   ├── SongCard.vue      # Song display with video
-│   │   ├── SongList.vue      # Songs grid
-│   │   ├── LoadingState.vue  # Loading indicator
-│   │   └── ErrorState.vue    # Error display
-│   ├── composables/
-│   │   └── useChart.js       # Chart state management
-│   ├── services/
-│   │   ├── billboard.js      # Billboard API client
-│   │   └── youtube.js        # YouTube API client
-│   ├── App.vue               # Root component
-│   └── main.js               # App entry point
-├── .env                      # Environment variables
-├── vite.config.js            # Vite configuration
-└── package.json
-```
-
-### Running the Frontend
-
+To clear all caches:
 ```bash
-# From project root
-npm run dev
-
-# Or from frontend directory
-cd frontend
-npm install
-npm run dev
+gh cache list --repo Komsomol/billboard-top-100
+gh cache delete <cache-id> --repo Komsomol/billboard-top-100
 ```
 
-This starts:
-- Express API server on http://localhost:3001
-- Vite dev server on http://localhost:5173
+## Dependencies
 
-### Environment Setup
+### Core Module
+| Package | Purpose |
+|---------|---------|
+| axios | HTTP client for Billboard.com |
+| cheerio | HTML parsing |
 
-```bash
-cd frontend
-cp .env.example .env
-# Edit .env with your YouTube API key
-```
+### Frontend
+| Package | Purpose |
+|---------|---------|
+| vue ^3.4 | UI framework |
+| express | Dev server API |
+| tailwindcss ^4 | Styling |
+| vite ^5 | Build tool |
 
-The server will:
-- ❌ Exit with error if `.env` file is missing
-- ⚠️ Warn if `VITE_YOUTUBE_API_KEY` is not configured (YouTube search disabled)
-
-### Frontend Features
-
-1. **Chart Selection** - Browse Hot 100, Billboard 200, and other charts
-2. **Date Selection** - View historical chart data
-3. **YouTube Integration** - Watch official music videos inline
-4. **Responsive Design** - Works on mobile and desktop
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `VITE_YOUTUBE_API_KEY` | YouTube Data API v3 key |
-| `PORT` | Express server port (default: 3001) |
-
-### Frontend API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/charts` | List all available charts |
-| `GET /api/chart` | Get Hot 100 (current week) |
-| `GET /api/chart/:name` | Get specific chart |
-| `GET /api/chart/:name?date=YYYY-MM-DD` | Get chart for date |
+### System (not npm)
+| Tool | Purpose |
+|------|---------|
+| yt-dlp | YouTube video search (prebuild) |
