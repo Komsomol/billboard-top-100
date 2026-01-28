@@ -24,6 +24,7 @@ const closeModal = () => {
   document.body.style.overflow = '';
 };
 
+// Medal colors: gold (#1), silver (#2), bronze (#3), default gray
 const rankClass = computed(() => {
   if (props.song.rank === 1) return 'text-yellow-400';
   if (props.song.rank === 2) return 'text-gray-300';
@@ -31,6 +32,7 @@ const rankClass = computed(() => {
   return 'text-gray-500';
 });
 
+// Position change: lastWeek - currentRank, so positive = moved up (lower rank number = higher position)
 const positionChange = computed(() => {
   const lastWeek = props.song.position?.positionLastWeek;
   if (!lastWeek) return { type: 'new', label: 'NEW', color: 'text-purple-400 bg-purple-400/10' };

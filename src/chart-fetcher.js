@@ -43,19 +43,19 @@ export const createHttpClient = () =>
  * @returns {boolean} True if the error is retryable
  */
 export const isRetryableError = (error) => {
-  // Network errors
+  // DNS failure (ENOTFOUND), connection reset, or connection aborted
   if (error.code === 'ECONNRESET' || error.code === 'ENOTFOUND' || error.code === 'ECONNABORTED') {
     return true;
   }
-  // Timeout
+  // Request timeout (axios sets ECONNABORTED or includes "timeout" in message)
   if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
     return true;
   }
-  // Server errors (5xx)
+  // Server errors (5xx) — Billboard CDN occasionally returns 503
   if (error.response?.status >= 500) {
     return true;
   }
-  // Rate limiting
+  // Rate limiting (429 Too Many Requests)
   if (error.response?.status === 429) {
     return true;
   }
@@ -78,6 +78,7 @@ export const fetchWithRetry = async (url, retries = MAX_RETRIES) => {
   } catch (error) {
     // Check if we should retry
     if (retries > 0 && isRetryableError(error)) {
+      // Linear backoff: 1s, 2s, 3s (RETRY_DELAY × attempt number)
       await delay(RETRY_DELAY * (MAX_RETRIES - retries + 1));
       return fetchWithRetry(url, retries - 1);
     }

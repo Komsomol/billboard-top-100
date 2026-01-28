@@ -8,6 +8,29 @@ import { getChart } from '../../src/index.js';
 const execFileAsync = promisify(execFile);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = join(__dirname, 'video-cache.json');
+
+/** Maximum number of songs to enrich with video data */
+const SONGS_LIMIT = 20;
+
+/** Number of YouTube search results to fetch per song (ytsearchN:) */
+const YT_SEARCH_COUNT = 5;
+
+/** Timeout for each yt-dlp subprocess in milliseconds */
+const YT_DLP_TIMEOUT_MS = 30000;
+
+/**
+ * Scoring weights for ranking YouTube search results.
+ * Higher scores indicate a more likely official music video.
+ */
+const SCORE_WEIGHTS = {
+  ARTIST_CHANNEL: 10,   // Channel name contains the artist name
+  VEVO_CHANNEL: 8,      // VEVO channels host official music videos
+  OFFICIAL_VIDEO: 5,    // Title contains "Official Video" / "Official Music Video"
+  LYRIC_OR_AUDIO: -3,   // Penalize lyric videos and audio-only uploads
+  BLOCKED: -1           // Sentinel: filtered out entirely
+};
+
+// Channels that re-upload songs with custom visuals (not official content)
 const BLOCKED_CHANNELS = ['7clouds'];
 
 const cacheKey = (title, artist) => `${artist} - ${title}`;
@@ -26,39 +49,72 @@ const saveCache = (cache) => {
   writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2));
 };
 
+/**
+ * Builds a YouTube search query for a song.
+ * Strips parenthetical info (e.g., "(feat. X)") from the title and
+ * uses only the primary artist (before commas/featuring/ampersands).
+ * @param {string} title - Song title from Billboard
+ * @param {string} artist - Artist name from Billboard
+ * @returns {string} Search query string
+ */
 const buildSearchQuery = (title, artist) => {
   const cleanTitle = title.replace(/\(.*?\)/g, '').trim();
   const cleanArtist = artist.split(/,|Featuring|&/i)[0].trim();
   return `${cleanArtist} ${cleanTitle} official video`;
 };
 
+/**
+ * Checks if a YouTube channel is in the blocked list.
+ * Blocked channels re-upload songs with non-official visuals.
+ * @param {string} channel - YouTube channel name
+ * @returns {boolean} True if the channel should be excluded
+ */
 const isBlockedChannel = (channel) =>
   BLOCKED_CHANNELS.some(blocked => channel.toLowerCase().includes(blocked.toLowerCase()));
 
+/**
+ * Scores a YouTube search result to rank official music videos higher.
+ * Returns SCORE_WEIGHTS.BLOCKED (-1) for blocked channels (filtered out by caller).
+ * @param {string} title - Video title
+ * @param {string} channel - YouTube channel name
+ * @param {string} artist - Lowercase primary artist name
+ * @returns {number} Score (higher = more likely official video, -1 = blocked)
+ */
 const scoreResult = (title, channel, artist) => {
   const chanLower = channel.toLowerCase();
   const titleLower = title.toLowerCase();
 
-  if (isBlockedChannel(channel)) return -1;
+  if (isBlockedChannel(channel)) return SCORE_WEIGHTS.BLOCKED;
 
   let score = 0;
-  if (chanLower.includes(artist)) score += 10;
-  if (titleLower.includes('official video') || titleLower.includes('official music video')) score += 5;
-  if (chanLower.includes('vevo')) score += 8;
-  if (titleLower.includes('lyric') || titleLower.includes('audio')) score -= 3;
+  if (chanLower.includes(artist)) score += SCORE_WEIGHTS.ARTIST_CHANNEL;
+  if (titleLower.includes('official video') || titleLower.includes('official music video')) score += SCORE_WEIGHTS.OFFICIAL_VIDEO;
+  if (chanLower.includes('vevo')) score += SCORE_WEIGHTS.VEVO_CHANNEL;
+  if (titleLower.includes('lyric') || titleLower.includes('audio')) score += SCORE_WEIGHTS.LYRIC_OR_AUDIO;
   return score;
 };
 
+/**
+ * Searches YouTube for the best matching music video using yt-dlp.
+ * Requires yt-dlp to be installed as a system-level CLI tool.
+ * Uses --flat-playlist to read only search metadata (avoids visiting
+ * individual video pages, which triggers YouTube bot detection).
+ * @param {string} title - Song title
+ * @param {string} artist - Artist name
+ * @returns {Promise<{videoId: string, embedUrl: string, watchUrl: string}|null>}
+ */
 const searchVideo = async (title, artist) => {
   const query = buildSearchQuery(title, artist);
   const cleanArtist = artist.split(/,|Featuring|&/i)[0].trim().toLowerCase();
 
   try {
+    // Output format: tab-delimited "videoId\tvideoTitle\tchannelName" per line
     const { stdout } = await execFileAsync('yt-dlp', [
-      `ytsearch5:${query}`,
+      `ytsearch${YT_SEARCH_COUNT}:${query}`,
+      '--flat-playlist',
       '--print', '%(id)s\t%(title)s\t%(channel)s',
       '--no-download'
-    ], { timeout: 30000 });
+    ], { timeout: YT_DLP_TIMEOUT_MS });
 
     const results = stdout.trim().split('\n')
       .filter(line => line.includes('\t'))
@@ -86,7 +142,15 @@ const searchVideo = async (title, artist) => {
   }
 };
 
-const enrichSongsWithVideos = async (songs, limit = 20) => {
+/**
+ * Enriches an array of songs with YouTube video data.
+ * Uses a persistent JSON file cache to avoid redundant yt-dlp searches.
+ * Only new songs (not in cache) trigger yt-dlp calls.
+ * @param {Array<{title: string, artist: string}>} songs - Songs to enrich
+ * @param {number} [limit=SONGS_LIMIT] - Maximum number of songs to process
+ * @returns {Promise<Array>} Songs with video property added
+ */
+const enrichSongsWithVideos = async (songs, limit = SONGS_LIMIT) => {
   const cache = loadCache();
   const songsToEnrich = songs.slice(0, limit);
   const enrichedSongs = [];
@@ -116,20 +180,22 @@ const enrichSongsWithVideos = async (songs, limit = 20) => {
   return enrichedSongs;
 };
 
+/**
+ * Main prebuild entry point. Fetches the Billboard Hot 100 chart,
+ * enriches top songs with YouTube video links via yt-dlp, and writes
+ * the result as static JSON for the Cloudflare Pages frontend.
+ */
 async function prebuild() {
   console.log('Pre-building chart data...');
 
   try {
-    // Fetch chart data
     console.log('Fetching Billboard Hot 100...');
     const chart = await getChart('hot-100');
 
-    // Limit to top 20
-    chart.songs = chart.songs.slice(0, 20);
+    chart.songs = chart.songs.slice(0, SONGS_LIMIT);
 
-    // Enrich with YouTube videos via yt-dlp
     console.log('Searching for YouTube videos...');
-    chart.songs = await enrichSongsWithVideos(chart.songs, 20);
+    chart.songs = await enrichSongsWithVideos(chart.songs, SONGS_LIMIT);
 
     // Create output directory
     const outputDir = join(__dirname, '..', 'public', 'data');

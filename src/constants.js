@@ -6,23 +6,19 @@
 export const BILLBOARD_BASE_URL = 'https://www.billboard.com';
 export const BILLBOARD_CHARTS_URL = `${BILLBOARD_BASE_URL}/charts/`;
 
+/** Axios request timeout — long enough for Billboard's slow responses */
 export const REQUEST_TIMEOUT = 30000; // 30 seconds
+
+/** Maximum number of fetch attempts per request (1 initial + 2 retries) */
 export const MAX_RETRIES = 3;
+
+/** Base delay between retries; multiplied by attempt number (linear backoff) */
 export const RETRY_DELAY = 1000; // 1 second
 
+/** Mimics a real browser to avoid being blocked by Billboard's CDN */
 export const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-/**
- * CSS selectors for Billboard.com HTML parsing
- * These may need updates if Billboard changes their site structure
- */
-export const SELECTORS = Object.freeze({
-  CHART_ITEM: '.chart-list-item',
-  DATE_SELECTOR: '.chart-detail-header__date-selector-button',
-  DATE_OPTION: '.dropdown__date-selector-option',
-  DATE_OPTION_DISABLED: 'dropdown__date-selector-option--disabled',
-  CHART_PANEL_LINK: '.chart-panel__link'
-});
+// NOTE: Stale SELECTORS export removed — authoritative selectors live in chart-parser.js
 
 /**
  * Enum for neighboring week types

@@ -79,7 +79,7 @@ export const getChart = async (chartName, date, callback) => {
   chartName = chartName || 'hot-100';
   date = date || '';
 
-  // Create promise-based implementation
+  // Wraps core logic in execute() to support both Promise and callback styles below
   const execute = async () => {
     // Validate chart name
     if (chartName && !isValidChartName(chartName)) {

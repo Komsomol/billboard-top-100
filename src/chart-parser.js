@@ -1,6 +1,6 @@
 /**
  * Billboard Top 100 - Chart Parser Module
- * Pure functions for parsing Billboard HTML (Updated for 2024+ structure)
+ * Pure functions for parsing Billboard HTML (Updated for 2025/2026 structure)
  */
 
 import * as cheerio from 'cheerio';
@@ -9,7 +9,9 @@ import { formatDateToYYYYMMDD, toTitleCase } from './date-utils.js';
 import { createParseError, createNotFoundError } from './errors.js';
 
 /**
- * CSS Selectors for Billboard.com (2024+ structure)
+ * Authoritative CSS selectors for 2025/2026 Billboard.com HTML structure.
+ * If Billboard changes their site, update these selectors first.
+ * The stale SELECTORS in constants.js have been removed; this is the single source of truth.
  */
 export const SELECTORS = {
   CHART_ROW: 'ul.o-chart-results-list-row',
@@ -134,7 +136,8 @@ export const extractCover = ($, row) => {
     const dataSrc = $(img).attr('data-lazy-src') || '';
     const src = $(img).attr('src') || '';
 
-    // Try to extract size from URL (e.g., 180x180, 344x344)
+    // Extract pixel dimensions from URL patterns like "180x180" or "344x344".
+    // Uses the first dimension (width) to compare resolution across candidates.
     const getSize = (url) => {
       const match = url.match(/(\d+)x(\d+)/);
       return match ? parseInt(match[1], 10) : 0;
@@ -206,20 +209,20 @@ export const extractPositionStats = ($, row) => {
  */
 export const extractChartWeek = ($) => {
   try {
-    // Look for data-date attribute
+    // Strategy 1: Structured data-date attribute (most reliable)
     const dateAttr = $('[data-date]').first().attr('data-date');
     if (dateAttr && /^\d{4}-\d{2}-\d{2}$/.test(dateAttr)) {
       return dateAttr;
     }
 
-    // Look for date in title or header
+    // Strategy 2: Parse date from <title> text (e.g., "January 15, 2024")
     const titleText = $('title').text();
     const dateMatch = titleText.match(/(\w+ \d+, \d{4})/);
     if (dateMatch) {
       return formatDateToYYYYMMDD(dateMatch[1]);
     }
 
-    // Look for date selector button
+    // Strategy 3: Date selector button (interactive chart navigation element)
     const dateButton = $('.date-selector__button, [class*="date-selector"] button').first().text().trim();
     if (dateButton) {
       return formatDateToYYYYMMDD(dateButton);
@@ -296,6 +299,7 @@ export const parseChartsList = (html) => {
   try {
     const $ = cheerio.load(html);
     const charts = [];
+    // Set-based deduplication: Billboard pages contain many duplicate chart links
     const seen = new Set();
 
     // Look for chart links

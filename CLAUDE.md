@@ -21,7 +21,7 @@ billboard-top-100/
 ├── src/                      # Core Node.js module
 │   ├── index.js              # Public API: getChart(), listCharts()
 │   ├── chart-fetcher.js      # HTTP fetching with retry logic (axios)
-│   ├── chart-parser.js       # HTML parsing with Cheerio (2024+ selectors)
+│   ├── chart-parser.js       # HTML parsing with Cheerio (2025/2026 selectors)
 │   ├── date-utils.js         # Date formatting utilities
 │   ├── constants.js          # URLs, timeouts, CSS selectors, error codes
 │   └── errors.js             # BillboardError class + factory functions
@@ -122,7 +122,7 @@ const charts = await listCharts();
 ### Error Codes
 - `NETWORK_ERROR`, `PARSE_ERROR`, `NOT_FOUND`, `INVALID_INPUT`, `TIMEOUT`
 
-### CSS Selectors (2024+ Billboard.com)
+### CSS Selectors (2025/2026 Billboard.com)
 
 Defined in `src/chart-parser.js`. If Billboard changes HTML structure, update these:
 ```javascript

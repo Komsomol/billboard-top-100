@@ -43,6 +43,12 @@ const validateEnv = () => {
 
 validateEnv();
 
+/** Default Billboard chart to fetch when no chart name is specified */
+const DEFAULT_CHART = 'hot-100';
+
+/** Number of top songs to return from the chart */
+const SONGS_DISPLAY_LIMIT = 20;
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -69,14 +75,12 @@ if (isProduction) {
  */
 app.get('/api/chart', async (req, res) => {
   try {
-    const chart = await getChart('hot-100');
+    const chart = await getChart(DEFAULT_CHART);
 
-    // Limit to top 20 songs
-    chart.songs = chart.songs.slice(0, 20);
+    chart.songs = chart.songs.slice(0, SONGS_DISPLAY_LIMIT);
 
-    // Enrich songs with YouTube video data
     const apiKey = process.env.VITE_YOUTUBE_API_KEY;
-    chart.songs = await enrichSongsWithVideos(chart.songs, apiKey, 20);
+    chart.songs = await enrichSongsWithVideos(chart.songs, apiKey, SONGS_DISPLAY_LIMIT);
 
     res.json({ success: true, data: chart });
   } catch (error) {
