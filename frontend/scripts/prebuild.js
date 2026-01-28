@@ -35,6 +35,35 @@ const buildSearchQuery = (title, artist) => {
   return `${cleanArtist} ${cleanTitle} official music video -lyrics`;
 };
 
+const isBlockedChannel = (channelTitle) =>
+  BLOCKED_CHANNELS.some(blocked => channelTitle.toLowerCase().includes(blocked.toLowerCase()));
+
+const scoreVideo = (item, artist) => {
+  const channel = item.snippet.channelTitle.toLowerCase();
+  const videoTitle = item.snippet.title.toLowerCase();
+
+  if (isBlockedChannel(item.snippet.channelTitle)) return -1;
+
+  let score = 0;
+  // Artist's own channel (strongest signal)
+  if (channel.includes(artist)) score += 10;
+  // Official video in title
+  if (videoTitle.includes('official video') || videoTitle.includes('official music video')) score += 5;
+  // VEVO channels are official
+  if (channel.includes('vevo')) score += 8;
+  // Penalize lyric/audio-only videos
+  if (videoTitle.includes('lyric') || videoTitle.includes('audio')) score -= 3;
+  return score;
+};
+
+const pickBestVideo = (items, artist) => {
+  const scored = items
+    .map(item => ({ item, score: scoreVideo(item, artist) }))
+    .filter(({ score }) => score >= 0)
+    .sort((a, b) => b.score - a.score);
+  return scored.length > 0 ? scored[0].item : items[0];
+};
+
 const searchVideo = async (title, artist, apiKey) => {
   if (!apiKey) return null;
 
@@ -52,10 +81,8 @@ const searchVideo = async (title, artist, apiKey) => {
     const data = await response.json();
 
     if (data.items?.length > 0) {
-      const video = data.items.find(item => {
-        const channel = item.snippet.channelTitle.toLowerCase();
-        return !BLOCKED_CHANNELS.some(blocked => channel.includes(blocked.toLowerCase()));
-      }) || data.items[0];
+      const cleanArtist = artist.split(/,|Featuring|&/i)[0].trim().toLowerCase();
+      const video = pickBestVideo(data.items, cleanArtist);
       return {
         videoId: video.id.videoId,
         embedUrl: `https://www.youtube.com/embed/${video.id.videoId}`,
