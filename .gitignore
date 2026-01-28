@@ -12,8 +12,9 @@ frontend/.env.local
 dist/
 frontend/dist/
 
-# Video cache (generated during prebuild)
+# Generated during prebuild
 frontend/scripts/video-cache.json
+frontend/public/data/chart.json
 
 # Test coverage
 coverage/
