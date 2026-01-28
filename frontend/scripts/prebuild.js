@@ -11,6 +11,7 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 const CACHE_PATH = join(__dirname, 'video-cache.json');
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+const BLOCKED_CHANNELS = ['7clouds'];
 
 const cacheKey = (title, artist) => `${artist} - ${title}`;
 
@@ -43,7 +44,7 @@ const searchVideo = async (title, artist, apiKey) => {
       q: buildSearchQuery(title, artist),
       type: 'video',
       videoCategoryId: '10',
-      maxResults: '1',
+      maxResults: '5',
       key: apiKey
     });
 
@@ -51,7 +52,10 @@ const searchVideo = async (title, artist, apiKey) => {
     const data = await response.json();
 
     if (data.items?.length > 0) {
-      const video = data.items[0];
+      const video = data.items.find(item => {
+        const channel = item.snippet.channelTitle.toLowerCase();
+        return !BLOCKED_CHANNELS.some(blocked => channel.includes(blocked.toLowerCase()));
+      }) || data.items[0];
       return {
         videoId: video.id.videoId,
         embedUrl: `https://www.youtube.com/embed/${video.id.videoId}`,
