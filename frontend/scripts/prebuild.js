@@ -23,6 +23,7 @@ const YT_DLP_TIMEOUT_MS = 30000;
  * Higher scores indicate a more likely official music video.
  */
 const SCORE_WEIGHTS = {
+  TITLE_MATCH: 15,      // Video title contains the song title (prevents wrong-song matches)
   ARTIST_CHANNEL: 10,   // Channel name contains the artist name
   VEVO_CHANNEL: 8,      // VEVO channels host official music videos
   OFFICIAL_VIDEO: 5,    // Title contains "Official Video" / "Official Music Video"
@@ -78,15 +79,17 @@ const isBlockedChannel = (channel) =>
  * @param {string} title - Video title
  * @param {string} channel - YouTube channel name
  * @param {string} artist - Lowercase primary artist name
+ * @param {string} songTitle - Lowercase song title to match against
  * @returns {number} Score (higher = more likely official video, -1 = blocked)
  */
-const scoreResult = (title, channel, artist) => {
+const scoreResult = (title, channel, artist, songTitle) => {
   const chanLower = channel.toLowerCase();
   const titleLower = title.toLowerCase();
 
   if (isBlockedChannel(channel)) return SCORE_WEIGHTS.BLOCKED;
 
   let score = 0;
+  if (titleLower.includes(songTitle)) score += SCORE_WEIGHTS.TITLE_MATCH;
   if (chanLower.includes(artist)) score += SCORE_WEIGHTS.ARTIST_CHANNEL;
   if (titleLower.includes('official video') || titleLower.includes('official music video')) score += SCORE_WEIGHTS.OFFICIAL_VIDEO;
   if (chanLower.includes('vevo')) score += SCORE_WEIGHTS.VEVO_CHANNEL;
@@ -106,6 +109,7 @@ const scoreResult = (title, channel, artist) => {
 const searchVideo = async (title, artist) => {
   const query = buildSearchQuery(title, artist);
   const cleanArtist = artist.split(/,|Featuring|&/i)[0].trim().toLowerCase();
+  const cleanTitle = title.replace(/\(.*?\)/g, '').trim().toLowerCase();
 
   try {
     // Output format: tab-delimited "videoId\tvideoTitle\tchannelName" per line
@@ -126,7 +130,7 @@ const searchVideo = async (title, artist) => {
     if (results.length === 0) return null;
 
     const scored = results
-      .map(r => ({ ...r, score: scoreResult(r.title, r.channel, cleanArtist) }))
+      .map(r => ({ ...r, score: scoreResult(r.title, r.channel, cleanArtist, cleanTitle) }))
       .filter(r => r.score >= 0)
       .sort((a, b) => b.score - a.score);
 
